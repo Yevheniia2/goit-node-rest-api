@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import shortid from 'shortid';
 
-const CONTACT_PATH = path.join(__dirname, 'contacts.json');
+const CONTACT_PATH = path.resolve('db', 'contacts.json');
 
 export const listContacts = async () => {
   const data = await fs.readFile(CONTACT_PATH, 'utf-8');
@@ -11,14 +11,14 @@ export const listContacts = async () => {
 };
 
 export const getContactById = async (id) => {
-  const data = await readAllContacts();
+  const data = await listContacts();
 
   const contact = data.find((el) => el.id === id);
   return contact || null;
 };
 
 export const addContact = async (contact) => {
-  const contactsList = await readAllContacts();
+  const contactsList = await listContacts();
 
   const newContact = {
     name: contact.name,
@@ -33,7 +33,7 @@ export const addContact = async (contact) => {
 };
 
 export const removeContact = async (id) => {
-  const contactsList = await readAllContacts();
+  const contactsList = await listContacts();
 
   const index = contactsList.findIndex((el) => el.id === id);
   if (index === -1) return null;
@@ -45,7 +45,7 @@ export const removeContact = async (id) => {
 };
 
 export const updateContactById = async (id, data) => {
-  const contacts = await readAllContacts();
+  const contacts = await listContacts();
   const index = contacts.findIndex((item) => item.id === id);
   if (index === -1) {
     return null;

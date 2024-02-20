@@ -61,7 +61,7 @@ export const getOneContact = async (req, res, next) => {
   export const updateContact = async (req, res, next) => {
     try {
       const { contactId } = req.params;
-      const updatedContact = await contactsService.updateContactById(contactId, req.body);
+      const updatedContact = await contactsService.updateContactById(contactId, ... req.body);
       if (!updatedContact) {
         throw HttpError(404, `Contact with ID:${contactId} not found`);
       }
