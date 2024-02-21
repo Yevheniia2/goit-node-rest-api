@@ -32,16 +32,16 @@ export const addContact = async (contact) => {
   return newContact;
 };
 
-export const removeContact = async (id) => {
+export const removeContact = async (contactId) => {
+  const stringedId = String(contactId);
   const contactsList = await listContacts();
-
-  const index = contactsList.findIndex((el) => el.id === id);
+  const index = contactsList.findIndex(el => el.id === stringedId);
   if (index === -1) return null;
 
   const [removedContact] = contactsList.splice(index, 1);
 
   await fs.writeFile(CONTACT_PATH, JSON.stringify(contactsList, null, 2));
-  return removedContact || null;
+  return removedContact;
 };
 
 export const updateContactById = async (id, data) => {

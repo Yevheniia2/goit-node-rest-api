@@ -4,7 +4,7 @@ import HttpError from './../helpers/HttpError.js';
 export const getAllContacts = async (req, res, next) => {
     try {
         const contacts = await contactsService.listContacts();
-        res.status(200).json({ data: contacts });
+        res.status(200).json(contacts);
        if (!contacts) {
         throw HttpError(401, 'Bad request');
        }
@@ -19,11 +19,10 @@ export const getOneContact = async (req, res, next) => {
     try {
         const { contactId } = req.params;
         const contact = await contactsService.getContactById(contactId);
-        // const contact = contacts.find(item => item.id === id);
       if (!contact) {
         throw HttpError(404, 'Not Found');
       }
-      res.status(200).json({ data: contact });
+      res.status(200).json(contact);
     } catch (error) {
         next(error);
     }
@@ -33,10 +32,10 @@ export const getOneContact = async (req, res, next) => {
     const { contactId } = req.params;
     try {
         const deletedContact = await contactsService.removeContact(contactId);
-    if(deletedContact===-1) {
-        throw HttpError(404, `Contact with ID:${contactId} not found`);
+    if(!deletedContact) {
+        throw HttpError(404, 'Not found');
       }
-      res.status(200).json({ message: "Contact deleted" });
+      res.status(200).json(deletedContact);
     } catch (error) {
       next(error);
     }
@@ -51,7 +50,7 @@ export const getOneContact = async (req, res, next) => {
         if (!newContact) {
         throw HttpError(400, 'Not Found');
     }
-    res.status(201).json({ data: newContact });
+    res.status(201).json(newContact);
     } catch (error) {
       console.log(error);
       next(error);
@@ -65,7 +64,7 @@ export const getOneContact = async (req, res, next) => {
       if (!updatedContact) {
         throw HttpError(404, `Contact with ID:${contactId} not found`);
       }
-      res.status(200).json({ data: updatedContact });
+      res.status(200).json(updatedContact);
     } catch (error) {
       next(error);
     }
