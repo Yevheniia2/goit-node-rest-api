@@ -63,7 +63,7 @@ export const updateContact = async (req, res, next) => {
       { new: true },
     );
     if (!updatedContact) {
-      throw HttpError(404, `Not found`);
+      throw HttpError(404, 'Not found');
     }
     res.status(200).json(updatedContact);
   } catch (error) {
@@ -74,14 +74,14 @@ export const updateContact = async (req, res, next) => {
 export const updateStatusContact = async (req, res, next) => {
   try {
     const { contactId } = req.params;
-
+    const { favorite } = req.body;
     const updatedFavoriteContact = await Contact.findByIdAndUpdate(
       contactId, 
-      req.body, 
+      { favorite }, 
       { new: true });
 
     if (!updatedFavoriteContact) {
-      throw HttpError(404, `Not found`);
+      throw HttpError(404, 'Not found');
     }
 
     res.status(200).json(updatedFavoriteContact);
