@@ -7,8 +7,8 @@ import {
   updateContact,
   updateStatusContact,
 } from "./../controllers/contactsControllers.js";
-import validId from "./../helpers/validId.js";
-import validateBody from './../helpers/validateBody.js';
+import validId from "../middlewares/validId.js";
+import validateBody from '../middlewares/validateBody.js';
 import { 
   createContactSchema, 
   updateContactSchema,
