@@ -53,7 +53,7 @@ export const deleteContact = async (req, res, next) => {
 
 export const createContact = async (req, res, next) => {
   try {
-    const newContact = await Contact.create({...req.body, ownerId: req.user.id });
+    const newContact = await Contact.create({...req.body, owner: req.user._id });
 
     if (!newContact) {
       throw HttpError(400, 'Not Found');
