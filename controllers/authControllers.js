@@ -51,14 +51,14 @@ export const userLogin = async (req, res, next) => {
       throw HttpError(401, 'Email or password incorrect');
     }
 
-    const token = jwt.sign({ id: user._id }, SECRET_JWT, { expiresIn: '90d' });
-    await User.findByIdAndUpdate(user._id, { token });
+    const token = jwt.sign({ _id: user._id }, SECRET_JWT, { expiresIn: '90d' });
+    const newUser = await User.findByIdAndUpdate(user._id, { token });
 
     res.status(200).json({
       token,
       user: {
-        email: user.email,
-        subscription: user.subscription,
+        email: newUser.email,
+        subscription: newUser.subscription,
       },
     });
   } catch (error) {
@@ -79,10 +79,10 @@ export const userLogout = async (req, res, next) => {
 
 export const userCurrent = async (req, res, next) => {
   try {
-    const current = await User.findById(req.user.id);
-    res.json({
-      subscription: current.subscription,
-      email: current.email,
+    const { email, subscription } = req.user;
+    res.status(200).json({
+      email,
+      subscription,
     });
   } catch (error) {
     next(error);

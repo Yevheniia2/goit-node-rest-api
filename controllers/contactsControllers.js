@@ -1,17 +1,13 @@
 import HttpError from './../helpers/HttpError.js';
-import Contact from '../models/contact.js';
+import Contact from './../models/contact.js';
 
 export const getAllContacts = async (req, res, next) => {
   const { page, limit, favorite } = req.query;
-  const ownerSelect = {owner: req.user._id};
+  const { _id } = req.user;
   const skip = (page - 1) * limit;
 
-  if (favorite !== undefined) {
-    ownerSelect.favorite = favorite;
-  }
-
   try {
-    const contacts = await Contact.find({ownerSelect, favorite}, "-createdAt -updatedAt", {skip, limit}).populate("owner", "name email");
+    const contacts = await Contact.find({owner: _id, favorite}, "-createdAt -updatedAt", {skip, limit}).populate("owner", "name email");
     res.status(200).json(contacts);
     if (!contacts) {
       throw HttpError(401, 'Bad Request');
@@ -28,7 +24,7 @@ export const getOneContact = async (req, res, next) => {
     if (!contact) {
       throw HttpError(404, 'Not Found');
     }
-    if (contact.owner.toString() !== req.user.contactId) {
+    if (contact.owner.toString() !== req.user._id.toString()) {
       throw HttpError(404, 'Not Found');
     }
     res.status(200).json(contact);
@@ -45,6 +41,11 @@ export const deleteContact = async (req, res, next) => {
     if (!deletedContact) {
       throw HttpError(404, `Not found`);
     }
+
+    if (deletedContact.owner.toString() !== req.user._id.toString()) {
+      throw HttpError(404, `Not found`);
+    }
+
     res.status(200).json(deletedContact);
   } catch (error) {
     next(error);
@@ -52,8 +53,9 @@ export const deleteContact = async (req, res, next) => {
 };
 
 export const createContact = async (req, res, next) => {
-  try {
-    const newContact = await Contact.create({...req.body, owner: req.user._id });
+   try {
+    const {_id: owner} = req.user;
+    const newContact = await Contact.create({...req.body, owner });
 
     if (!newContact) {
       throw HttpError(400, 'Not Found');
@@ -73,9 +75,15 @@ export const updateContact = async (req, res, next) => {
       contactId,
       { name, email, phone, favorite },
       { new: true });
+
     if (!updatedContact) {
       throw HttpError(404, 'Not found');
     }
+
+    if (updatedContact.owner.toString() !== req.user._id.toString()) {
+      throw HttpError(404, 'Not found');
+    }
+
     res.status(200).json(updatedContact);
   } catch (error) {
     next(error);
@@ -92,6 +100,10 @@ export const updateStatusContact = async (req, res, next) => {
       { new: true });
 
     if (!updatedFavoriteContact) {
+      throw HttpError(404, 'Not found');
+    }
+
+    if (updatedFavoriteContact.owner.toString() !== req.user._id.toString()) {
       throw HttpError(404, 'Not found');
     }
 
