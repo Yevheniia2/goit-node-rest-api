@@ -5,27 +5,23 @@ import User from './../models/user.js';
 const { SECRET_JWT } = process.env;
 
 const authenticate = async (req, res, next) => {
-  const { authorization = '' } = req.headers;
+  const authHeader = req.headers.authorization;
 
-  const [bearer, token] = authorization.split(' ');
-  if (bearer !== 'Bearer') {
-    next(HttpError(401));
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw HttpError(401, 'Not authorized');
   }
 
-  try {
-    const { _id } = jwt.verify(token, SECRET_JWT);
-    const user = await User.findById( _id );
+  const token = authHeader.split(' ')[1];
 
+  try {
+    const decode = jwt.verify(token, SECRET_JWT);
+    const user = await User.findById( decode.id );
     if (!user || !user.token || user.token !== token) {
       next(HttpError(401));
     }
 
-    // req.user = {
-    //   _id: user.id,
-    //   email: user.email,
-    //   token: user.token
-    // };
     req.user = user;
+    console.log(user);
 
     next();
   } catch {
