@@ -1,17 +1,17 @@
 import HttpError from './../helpers/HttpError.js';
 import Contact from './../models/contact.js';
+// import dotenv from 'dotenv';
+// dotenv.config();
+
 
 export const getAllContacts = async (req, res, next) => {
-  const { page, limit, favorite } = req.query;
-  const { _id } = req.user;
+  const { page=1, limit=2 } = req.query;
+  const { _id:owner } = req.user._id;
   const skip = (page - 1) * limit;
 
   try {
-    const contacts = await Contact.find({owner: _id, favorite}, "-createdAt -updatedAt", {skip, limit}).populate("owner", "name email");
-    res.status(200).json(contacts);
-    if (!contacts) {
-      throw HttpError(401, 'Bad Request');
-    }
+    const contacts = await Contact.find({owner}, "-createdAt -updatedAt", {skip, limit});
+    res.json(contacts);
   } catch (error) {
     next(error);
   }
