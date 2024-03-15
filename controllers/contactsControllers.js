@@ -5,7 +5,7 @@ import Contact from './../models/contact.js';
 
 
 export const getAllContacts = async (req, res, next) => {
-  const { page=1, limit=2 } = req.query;
+  const { page=1, limit=3 } = req.query;
   const { _id:owner } = req.user._id;
   const skip = (page - 1) * limit;
 
