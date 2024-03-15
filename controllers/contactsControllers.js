@@ -1,8 +1,5 @@
 import HttpError from './../helpers/HttpError.js';
 import Contact from './../models/contact.js';
-// import dotenv from 'dotenv';
-// dotenv.config();
-
 
 export const getAllContacts = async (req, res, next) => {
   const { page=1, limit=3 } = req.query;

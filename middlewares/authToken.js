@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import HttpError from './../helpers/HttpError.js';
 import User from './../models/user.js';
 import { configDotenv } from 'dotenv';
 
