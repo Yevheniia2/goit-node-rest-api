@@ -3,8 +3,6 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import HttpError from './../helpers/HttpError.js';
 import User from './../models/user.js';
-import dotenv from "dotenv";
-import multer from 'multer';
 import * as fs from "node:fs/promises";
 import * as path from "path";
 import gravatar from 'gravatar';
@@ -109,7 +107,8 @@ export const userCurrent = async (req, res, next) => {
 export const getAvatar = async (req, res, next) => {
   
   try {
-    const user = await User.findById(req.user._id);
+    const {_id} = req.user;
+    const user = await User.findById(_id);
     if (user === null) {
       return res.status(404).send({ message: "User not found" });
     }
@@ -118,7 +117,7 @@ export const getAvatar = async (req, res, next) => {
       return res.status(404).send({ message: "Avatar not found" });
     }
 
-    res.sendFile(path.join(process.cwd(), 'public/avatars', user.avatarURL));
+    res.sendFile(path.join(process.cwd(), 'public', user.avatarURL));
   } catch (error) {
     next(error);
   }
@@ -126,30 +125,34 @@ export const getAvatar = async (req, res, next) => {
 
 export const uploadAvatar = async (req, res, next) => {
   try {
-    if (!req.file) {
-      throw HttpError(400, 'No file uploaded');
-    }
+    const {_id} = req.user;
+    const {path: tempUpload, originalname} = req.file;
 
-    const user = await UserModel.findByIdAndUpdate(
-      req.user._id,
-      { avatar: req.file.filename },
+    if (!req.file) {
+      return res.status(400).send({ message: "No file uploaded" });
+    }
+    
+    const filename = `${_id}_${originalname}`;
+
+    const sizeAvatar = await Jimp.read(tempUpload);
+    sizeAvatar.resize(250, 250).write(tempUpload);
+
+    await fs.rename(tempUpload, path.join(process.cwd(), "public/avatars", filename));
+
+    const avatarURL = path.join('/avatars', filename);
+
+    const user = await User.findByIdAndUpdate(
+      _id,
+      { avatarURL },
       { new: true }
     );
 
     if (user === null) {
-      throw HttpError(404, 'User not found');
+      return res.status(404).send({ message: "User not found" });
     }
 
-    const sizeAvatar = await Jimp.read(req.file.path);
-    sizeAvatar.resize(250, 250).write(req.file.path);
-
-    await fs.rename(req.file.path, path.join(process.cwd(), "public/avatars", req.file.filename));
-
-    const avatarURL = `${req.file.filename}`;
-
-    res.status(200).json({ avatarURL });
+    res.status(200).json({ avatarURL: user.avatarURL });
   } catch (error) {
-    console.error('Error during avatar upload:', error);
-    next(error);
+      next(error);
   }
 }
