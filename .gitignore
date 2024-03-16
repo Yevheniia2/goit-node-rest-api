@@ -4,3 +4,7 @@ node_modules/
 .vscode
 .DS_Store
 config.js
+tmp/*
+!tmp/.gitkeep
+public/avatars/*
+!public/avatars/.gitkeep

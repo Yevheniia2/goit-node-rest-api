@@ -3,6 +3,12 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import HttpError from './../helpers/HttpError.js';
 import User from './../models/user.js';
+import dotenv from "dotenv";
+import multer from 'multer';
+import * as fs from "node:fs/promises";
+import * as path from "path";
+import gravatar from 'gravatar';
+import Jimp from 'jimp';
 
 dotenv.config();
 
@@ -19,7 +25,8 @@ export const userSignup = async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ email: normalizedEmail, password: passwordHash, subscription, token: null });
+    const avatarURL = gravatar.url(email);
+    const newUser = await User.create({ email: normalizedEmail, password: passwordHash, subscription, token: null, avatarURL });
 
     const newToken = jwt.sign({
       id: newUser._id
@@ -36,6 +43,7 @@ export const userSignup = async (req, res, next) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarURL: newUser.avatarURL,
       },
     });
   } catch (error) {
@@ -97,3 +105,51 @@ export const userCurrent = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAvatar = async (req, res, next) => {
+  
+  try {
+    const user = await User.findById(req.user._id);
+    if (user === null) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    if (user.avatarURL === null) {
+      return res.status(404).send({ message: "Avatar not found" });
+    }
+
+    res.sendFile(path.join(process.cwd(), 'public/avatars', user.avatarURL));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw HttpError(400, 'No file uploaded');
+    }
+
+    const user = await UserModel.findByIdAndUpdate(
+      req.user._id,
+      { avatar: req.file.filename },
+      { new: true }
+    );
+
+    if (user === null) {
+      throw HttpError(404, 'User not found');
+    }
+
+    const sizeAvatar = await Jimp.read(req.file.path);
+    sizeAvatar.resize(250, 250).write(req.file.path);
+
+    await fs.rename(req.file.path, path.join(process.cwd(), "public/avatars", req.file.filename));
+
+    const avatarURL = `${req.file.filename}`;
+
+    res.status(200).json({ avatarURL });
+  } catch (error) {
+    console.error('Error during avatar upload:', error);
+    next(error);
+  }
+}
