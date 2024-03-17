@@ -153,6 +153,7 @@ export const uploadAvatar = async (req, res, next) => {
 
     res.status(200).json({ avatarURL: user.avatarURL });
   } catch (error) {
-      next(error);
+      return res.status(500).send({ message: "Error processing file upload" });
   }
+  next(error);
 }
